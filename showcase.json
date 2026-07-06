@@ -1,0 +1,92 @@
+{
+  "en": {
+    "title": "Aurelia — Premium Baby Playpens & Accessories",
+    "sections": [
+      {
+        "title": "What is Aurelia?",
+        "description": "Aurelia is a modern, premium web-based e-commerce platform designed to help parents find and purchase top-quality baby playpens, safety gear, toys, and nursery essentials."
+      },
+      {
+        "title": "Premium & Safe Playpens",
+        "description": "We specialize in European safety-certified baby playpens, crafted with non-toxic materials, smooth rounded edges, and sturdy locking mechanisms to keep your babies secure and happy."
+      },
+      {
+        "title": "Interactive Shopping Experience",
+        "description": "The application offers an interactive, smooth user interface with quick filters, category pages, tabbed new arrivals, trending products, and live countdown deals."
+      },
+      {
+        "title": "User Accounts & Personalization",
+        "description": "Users can create profiles, manage an address book, select payment options, view their order history, request returns/cancellations, and track reviews."
+      },
+      {
+        "title": "Integrated Wallet System",
+        "description": "Includes a built-in customer wallet that allows users to manage funds, see transactions, and check out instantly using wallet balance."
+      },
+      {
+        "title": "Comprehensive Wishlist & Cart",
+        "description": "Customers can save items to a wishlist for later or manage their shopping cart dynamically with real-time updates and notifications."
+      },
+      {
+        "title": "Full-Featured Admin Dashboard",
+        "description": "Admins can seamlessly manage products, categories, homepage promotional banners, special offers, and upload images with ease."
+      },
+      {
+        "title": "Modern Tech Stack",
+        "description": "Built using React 19, TypeScript, Vite, Tailwind CSS, and Zustand on the frontend, with Hono, Drizzle ORM, and Cloudflare Wrangler on the backend."
+      },
+      {
+        "title": "Fast & Reliable Local Database",
+        "description": "Utilizes Drizzle Kit and SQLite (LibSQL) for high-performance data querying and migrations, ensuring consistent uptime."
+      },
+      {
+        "title": "Safe Demo Mode Sandbox",
+        "description": "Equipped with a built-in Demo Mode modal to guide visitors and test features safely without affecting live production databases."
+      }
+    ]
+  },
+  "bn": {
+    "title": "প্লেপেন হাউস — প্রিমিয়াম বেবি প্লেপেন এবং আনুষাঙ্গিক",
+    "sections": [
+      {
+        "title": "প্লেপেন হাউস কি?",
+        "description": "প্লেপেন হাউস হলো একটি আধুনিক এবং প্রিমিয়াম অনলাইন ই-কমার্স প্ল্যাটফর্ম যা অভিভাবকদের সেরা মানের বেবি প্লেপেন, নিরাপত্তা সরঞ্জাম, খেলনা এবং নার্সারি সামগ্রী খুঁজে পেতে এবং কিনতে সাহায্য করে।"
+      },
+      {
+        "title": "প্রিমিয়াম ও নিরাপদ প্লেপেন",
+        "description": "আমরা ইউরোপীয় নিরাপত্তা সার্টিফিকেটপ্রাপ্ত বেবি প্লেপেন সরবরাহ করি, যা বিষাক্তহীন উপকরণ, মসৃণ গোলাকার কোণা এবং মজবুত লকিং সিস্টেমের মাধ্যমে আপনার শিশুর নিরাপত্তা নিশ্চিত করে।"
+      },
+      {
+        "title": "ইন্টারেক্টিভ কেনাকাটার অভিজ্ঞতা",
+        "description": "অ্যাপ্লিকেশনটিতে দ্রুত ফিল্টার, ক্যাটাগরি পেজ, নতুন আগত পণ্য, ট্রেন্ডিং পণ্য এবং লাইভ কাউন্টডাউন ডিল সহ একটি চমৎকার ও সহজ ইউজার ইন্টারফেস রয়েছে।"
+      },
+      {
+        "title": "ইউজার অ্যাকাউন্ট এবং পার্সোনালাইজেশন",
+        "description": "ব্যবহারকারীরা তাদের প্রোফাইল তৈরি করতে পারেন, ঠিকানা বুক পরিচালনা করতে পারেন, পেমেন্ট অপশন নির্বাচন করতে পারেন, অর্ডারের বিবরণ দেখতে পারেন এবং রিটার্ন/বাতিল অনুরোধ ট্র্যাক করতে পারেন।"
+      },
+      {
+        "title": "ইন্টিগ্রেটেড ওয়ালেট সিস্টেম",
+        "description": "রয়েছে একটি বিল্ট-ইন ওয়ালেট সিস্টেম যার মাধ্যমে গ্রাহকরা ব্যালেন্স রিচার্জ করতে পারেন, লেনদেনের ইতিহাস দেখতে পারেন এবং ওয়ালেটের মাধ্যমে দ্রুত পেমেন্ট করতে পারেন।"
+      },
+      {
+        "title": "উন্নত উইশলিস্ট এবং কার্ট",
+        "description": "গ্রাহকেরা পরবর্তীতে কেনার জন্য পছন্দের পণ্যসমূহ উইশলিস্টে সংরক্ষণ করতে পারেন অথবা লাইভ আপডেট সহ তাদের শপিং কার্ট পরিচালনা করতে পারেন।"
+      },
+      {
+        "title": "পূর্ণাঙ্গ অ্যাডমিন ড্যাশবোর্ড",
+        "description": "অ্যাডমিনরা সহজেই পণ্য যুক্ত ও এডিট করতে পারেন, ক্যাটাগরি তৈরি করতে পারেন, হোমপেজের প্রমোশনাল ব্যানার এবং বিশেষ অফারসমূহ পরিচালনা করতে পারেন।"
+      },
+      {
+        "title": "আধুনিক প্রযুক্তিগত কাঠামো",
+        "description": "ফ্রন্টএন্ডের জন্য React 19, TypeScript, Vite, Tailwind CSS এবং Zustand এবং ব্যাকএন্ডের জন্য Hono, Drizzle ORM এবং Cloudflare Wrangler ব্যবহার করা হয়েছে।"
+      },
+      {
+        "title": "দ্রুত এবং নির্ভরযোগ্য ডাটাবেজ",
+        "description": "উচ্চ-গতির ডাটা কোয়েরি এবং মাইগ্রেশনের জন্য Drizzle Kit এবং SQLite (LibSQL) ডাটাবেস ব্যবহার করা হয়েছে, যা সাইটের কার্যক্ষমতা বজায় রাখে।"
+      },
+      {
+        "title": "নিরাপদ ডেমো মোড স্যান্ডবক্স",
+        "description": "একটি বিল্ট-ইন ডেমো মোড মডেল রয়েছে যা দর্শকদের নির্দেশনা দিতে এবং লাইভ ডাটাবেজের ক্ষতি না করে নিরাপদে ফিচারসমূহ টেস্ট করতে সাহায্য করে।"
+      }
+    ]
+  }
+}

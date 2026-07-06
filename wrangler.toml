@@ -1,0 +1,7 @@
+name = "orbit-ecomm-demo"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "frontend/dist"
+
+[[kv_namespaces]]
+binding = "CACHE_KV"
+id = "<YOUR_KV_NAMESPACE_ID_HERE>"

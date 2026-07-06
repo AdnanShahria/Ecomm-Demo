@@ -1,0 +1,623 @@
+import React, { useEffect, useState, useCallback } from 'react';
+import { 
+  ShoppingBag, Users, Target, DollarSign,
+  AlertTriangle, Calendar, ChevronDown, X
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+interface DashboardOrder {
+  id: string;
+  invoiceId: string;
+  customerName: string;
+  status: string;
+  totalAmount: number;
+}
+
+interface DashboardProduct {
+  id: string;
+  title: string;
+  stock: number;
+}
+
+interface DashboardStats {
+  counts: { products: number; categories: number; users: number; orders: number; reviews: number; totalSold: number };
+  revenue: { total: number; currency: string };
+  ordersByStatus: Record<string, number>;
+  recentOrders: DashboardOrder[];
+  lowStockProducts: DashboardProduct[];
+  monthlyRevenue: { month: string; total: number; count: number }[];
+}
+
+interface DashboardProps {
+  stats: { products: number; categories: number; banners: number };
+}
+
+type TimelinePreset = '7d' | '1m' | '2m' | '3m' | '4m' | '6m' | '1y' | 'custom' | 'lifetime';
+
+const TIMELINE_OPTIONS: { id: TimelinePreset; label: string }[] = [
+  { id: '7d', label: '7 Days' },
+  { id: '1m', label: '1 Month' },
+  { id: '2m', label: '2 Months' },
+  { id: '3m', label: '3 Months' },
+  { id: '4m', label: '4 Months' },
+  { id: '6m', label: '6 Months' },
+  { id: '1y', label: '1 Year' },
+  { id: 'lifetime', label: 'Lifetime' },
+  { id: 'custom', label: 'Custom Range' },
+];
+
+function getDateRange(preset: TimelinePreset): { from: number | null; to: number | null } {
+  if (preset === 'lifetime') return { from: null, to: null };
+  if (preset === 'custom') return { from: null, to: null };
+
+  const now = Date.now();
+  const msDay = 86400000;
+  const map: Record<string, number> = {
+    '7d': 7 * msDay,
+    '1m': 30 * msDay,
+    '2m': 60 * msDay,
+    '3m': 90 * msDay,
+    '4m': 120 * msDay,
+    '6m': 180 * msDay,
+    '1y': 365 * msDay,
+  };
+  return { from: now - (map[preset] || 0), to: now };
+}
+
+export const AdminDashboard: React.FC<DashboardProps> = () => {
+  const [data, setData] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [timeline, setTimeline] = useState<TimelinePreset>('6m');
+  const [isTimelineOpen, setIsTimelineOpen] = useState(false);
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+  const [activeRange, setActiveRange] = useState<{ from: number | null; to: number | null }>(getDateRange('6m'));
+
+  const fetchDashboard = useCallback(async (range: { from: number | null; to: number | null }) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (range.from) params.set('from', range.from.toString());
+      if (range.to) params.set('to', range.to.toString());
+      const qs = params.toString();
+      const res = await fetch(`/api/v1/dashboard/stats${qs ? `?${qs}` : ''}`);
+      const json = await res.json();
+      setData(json);
+    } catch {
+      // silently fail
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      fetchDashboard(activeRange);
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, [activeRange, fetchDashboard]);
+
+  const handleTimelineSelect = (preset: TimelinePreset) => {
+    setTimeline(preset);
+    if (preset === 'custom') {
+      // Don't fetch yet — wait for user to submit custom dates
+      setIsTimelineOpen(false);
+      return;
+    }
+    const range = getDateRange(preset);
+    setActiveRange(range);
+    setIsTimelineOpen(false);
+  };
+
+  const applyCustomRange = () => {
+    if (!customFrom || !customTo) return;
+    const from = new Date(customFrom).getTime();
+    const to = new Date(customTo).setHours(23, 59, 59, 999);
+    setActiveRange({ from, to });
+  };
+
+  const getActiveLabel = () => {
+    const option = TIMELINE_OPTIONS.find(o => o.id === timeline);
+    if (timeline === 'custom' && customFrom && customTo) {
+      return `${customFrom} — ${customTo}`;
+    }
+    return option?.label || 'Lifetime';
+  };
+
+  // Initial fallback if data is null while loading
+  const counts = data?.counts || { products: 0, categories: 0, users: 0, orders: 0, reviews: 0, totalSold: 0 };
+  const revenue = typeof data?.revenue === 'object' ? data.revenue.total : (data?.revenue || 0);
+  const ordersByStatus = data?.ordersByStatus || {};
+  const recentOrders = data?.recentOrders || [];
+  const lowStockProducts = data?.lowStockProducts || [];
+  const monthlyRevenue = data?.monthlyRevenue || [];
+
+  const pendingOrders = ordersByStatus['Pending'] || 0;
+  const processingOrders = ordersByStatus['Processing'] || 0;
+  const deliveredOrders = ordersByStatus['Delivered'] || 0;
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Welcome + Timeline Selector */}
+      {/* Welcome + Timeline Selector */}
+      <div className="flex items-center justify-between gap-4 pb-2 border-b border-[var(--adm-border)]">
+        <div className="min-w-0">
+          <h2 className="text-lg md:text-3xl font-black text-[var(--adm-text-primary)] tracking-tight truncate">Welcome Back!</h2>
+          <p className="hidden md:block text-[13px] md:text-sm font-medium text-[var(--adm-text-secondary)] mt-1">Here's what's happening with your store today.</p>
+        </div>
+
+        {/* Timeline Picker */}
+        <div className="relative flex-shrink-0">
+          <button
+            onClick={() => setIsTimelineOpen(!isTimelineOpen)}
+            className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 bg-[var(--adm-card-bg)] border border-[var(--adm-border)] rounded-xl md:rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:border-[#ff6b6b]/40 hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] transition-all group min-w-[110px] md:min-w-[180px] justify-between"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 bg-[#ff6b6b]/10 rounded-lg">
+                <Calendar size={14} className="text-[#ff6b6b]" />
+              </div>
+              <span className="text-[12px] font-black text-[var(--adm-text-primary)] uppercase tracking-wider">{getActiveLabel()}</span>
+            </div>
+            <ChevronDown size={14} className={`text-[var(--adm-text-secondary)] group-hover:text-[#ff6b6b] transition-all ${isTimelineOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* Secondary loading indicator removed as per user request */}
+
+          {isTimelineOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setIsTimelineOpen(false)} />
+              <div className="absolute left-0 sm:left-auto right-0 top-full mt-2 w-full sm:w-56 bg-[var(--adm-card-bg)] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-[var(--adm-border)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="p-2">
+                  <div className="px-3 py-2 mb-1">
+                    <span className="text-[9px] font-black text-[var(--adm-text-secondary)] uppercase tracking-[0.2em]">Select Period</span>
+                  </div>
+                  {TIMELINE_OPTIONS.map(option => (
+                    <button
+                      key={option.id}
+                      onClick={() => handleTimelineSelect(option.id)}
+                      className={`w-full text-left px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all ${
+                        timeline === option.id
+                          ? 'bg-[#ff6b6b]/10 text-[#ff6b6b] font-black'
+                          : 'text-[var(--adm-text-primary)] hover:bg-[var(--adm-bg)]'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Custom Date Range Picker */}
+      {timeline === 'custom' && (
+        <div className="bg-[var(--adm-card-bg)] p-4 md:p-6 rounded-2xl border-2 border-[#ff6b6b]/20 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex items-center gap-3">
+              <Calendar size={18} className="text-[#ff6b6b] flex-shrink-0" />
+              <span className="text-[11px] font-black text-[var(--adm-text-primary)] uppercase tracking-widest">Custom Range</span>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-grow">
+              <div className="flex-1">
+                <label className="text-[9px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest block mb-1">From</label>
+                <input
+                  type="date"
+                  value={customFrom}
+                  onChange={e => setCustomFrom(e.target.value)}
+                  className="w-full bg-[var(--adm-bg)] border border-[var(--adm-border)] rounded-xl px-3 py-2.5 text-[12px] font-bold text-[var(--adm-text-primary)] outline-none focus:border-[#ff6b6b]/30 focus:bg-[var(--adm-card-bg)] transition-all"
+                />
+              </div>
+              <span className="hidden sm:block text-gray-300 font-bold mt-4">—</span>
+              <div className="flex-1">
+                <label className="text-[9px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest block mb-1">To</label>
+                <input
+                  type="date"
+                  value={customTo}
+                  onChange={e => setCustomTo(e.target.value)}
+                  className="w-full bg-[var(--adm-bg)] border border-[var(--adm-border)] rounded-xl px-3 py-2.5 text-[12px] font-bold text-[var(--adm-text-primary)] outline-none focus:border-[#ff6b6b]/30 focus:bg-[var(--adm-card-bg)] transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 md:mt-4">
+              <button
+                onClick={applyCustomRange}
+                disabled={!customFrom || !customTo}
+                className="flex-grow md:flex-grow-0 px-6 py-2.5 bg-[#ff6b6b] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#ff5252] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+              >
+                Apply
+              </button>
+              <button
+                onClick={() => { setTimeline('lifetime'); setActiveRange({ from: null, to: null }); setCustomFrom(''); setCustomTo(''); }}
+                className="p-2.5 text-[var(--adm-text-secondary)] hover:text-[#ff6b6b] transition-colors bg-[var(--adm-bg)] rounded-xl border border-[var(--adm-border)]"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard 
+            label="Total Revenue" 
+            value={`৳${(revenue || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} 
+            icon={DollarSign} 
+            color="orange" 
+            subtitle={`${counts.orders} orders`} 
+            to="/admin/orders" 
+            loading={loading}
+          />
+          <StatCard 
+            label="Products" 
+            value={counts.products.toLocaleString()} 
+            icon={ShoppingBag} 
+            color="coral" 
+            subtitle={`${counts.categories} categories • ${counts.totalSold} sold`} 
+            to="/admin/products" 
+            loading={loading}
+          />
+          <StatCard 
+            label="Customers" 
+            value={counts.users.toLocaleString()} 
+            icon={Users} 
+            color="red" 
+            subtitle={`${counts.reviews} reviews`} 
+            to="/admin/customers" 
+            loading={loading}
+          />
+          <StatCard 
+            label="Pending Orders" 
+            value={(pendingOrders + processingOrders).toString()} 
+            icon={Target} 
+            color="orange" 
+            subtitle={`${deliveredOrders} delivered`} 
+            to="/admin/orders" 
+            loading={loading}
+          />
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Revenue Chart */}
+        <div className="lg:col-span-2 bg-[var(--adm-card-bg)] rounded-[2rem] p-8 border border-[var(--adm-border)] shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-black text-[var(--adm-text-primary)]">Monthly Revenue</h3>
+            <ChartLegend label="Revenue" color="#ff6b6b" />
+          </div>
+          <div className="h-80 w-full relative">
+            {loading ? (
+              <div className="absolute inset-0 flex flex-col justify-between py-8 px-12">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className="h-0.5 w-full bg-[var(--adm-bg)] skeleton opacity-50" />
+                ))}
+                <div className="flex items-end justify-around h-48">
+                  {[1, 2, 3, 4, 5, 6].map(i => (
+                    <div key={i} className="w-12 bg-gray-100 rounded-2xl skeleton" style={{ height: `${20 * i}%` }} />
+                  ))}
+                </div>
+              </div>
+            ) : monthlyRevenue.length > 0 ? (
+              <svg viewBox="-60 -20 680 240" className="w-full h-full overflow-visible preserve-3d" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ff6b6b" />
+                    <stop offset="100%" stopColor="#ff9f43" />
+                  </linearGradient>
+                  <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="4" />
+                    <feOffset dx="0" dy="6" result="offsetblur" />
+                    <feComponentTransfer>
+                      <feFuncA type="linear" slope="0.3" />
+                    </feComponentTransfer>
+                    <feMerge>
+                      <feMergeNode />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                
+                {/* Y-Axis Labels & Grid Lines */}
+                {(() => {
+                  const maxVal = Math.max(...monthlyRevenue.map(m => m.total), 1);
+                  const steps = [0, 0.25, 0.5, 0.75, 1];
+                  return steps.map((step, i) => {
+                    const y = 200 - (step * 200);
+                    const label = (maxVal * step);
+                    const formattedLabel = label >= 1000000 
+                      ? (label / 1000000).toFixed(1) + 'M' 
+                      : label >= 1000 
+                        ? (label / 1000).toFixed(0) + 'K' 
+                        : label.toFixed(0);
+                    
+                    return (
+                      <g key={i}>
+                        <line x1="0" y1={y} x2="600" y2={y} stroke="#f1f5f9" strokeWidth="1" />
+                        <text 
+                          x="-10" 
+                          y={y} 
+                          textAnchor="end" 
+                          alignmentBaseline="middle"
+                          className="text-[10px] font-black fill-[var(--adm-text-secondary)] opacity-60"
+                        >
+                          ৳{formattedLabel}
+                        </text>
+                      </g>
+                    );
+                  });
+                })()}
+
+                {/* Bars & X-Axis Labels */}
+                {(() => {
+                  const maxVal = Math.max(...monthlyRevenue.map(m => m.total), 1);
+                  const barW = Math.min(45, 550 / monthlyRevenue.length);
+                  return monthlyRevenue.map((m, i) => {
+                    const x = (600 / (monthlyRevenue.length)) * i + (600 / monthlyRevenue.length) / 2;
+                    const h = (m.total / maxVal) * 200;
+                    const MONTH_NAMES = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+                    const [, mm] = m.month.split('-');
+                    const monthLabel = MONTH_NAMES[parseInt(mm) - 1] || mm;
+                    return (
+                      <g key={i} className="group/bar">
+                        <rect 
+                          x={x - barW / 2} 
+                          y={200 - h} 
+                          width={barW} 
+                          height={h} 
+                          rx={barW / 2.5} 
+                          fill="url(#barGradient)" 
+                          filter="url(#shadow)"
+                          className="opacity-90 group-hover/bar:opacity-100 transition-all duration-300 cursor-pointer" 
+                        />
+                        {/* Value on Hover */}
+                        <text 
+                          x={x} 
+                          y={200 - h - 12} 
+                          textAnchor="middle" 
+                          className="text-[10px] font-black fill-[#ff6b6b] opacity-0 group-hover/bar:opacity-100 transition-opacity duration-300"
+                        >
+                          ৳{Math.round(m.total / 1000)}k
+                        </text>
+                        {/* X-Axis Label */}
+                        <text x={x} y={222} textAnchor="middle" className="text-[10px] font-black fill-[var(--adm-text-secondary)] uppercase tracking-tight">
+                          {monthLabel}
+                        </text>
+                      </g>
+                    );
+                  });
+                })()}
+              </svg>
+            ) : (
+              <div className="flex items-center justify-center h-full text-[var(--adm-text-secondary)] text-sm font-bold">No revenue data yet</div>
+            )}
+          </div>
+        </div>
+
+        {/* Order Status Breakdown */}
+        <div className="bg-[var(--adm-card-bg)] rounded-[2rem] p-8 border border-[var(--adm-border)] shadow-sm flex flex-col">
+          <h3 className="text-lg font-black text-[var(--adm-text-primary)] mb-2">Order Status</h3>
+          <p className="text-xs font-medium text-[var(--adm-text-secondary)] mb-6">Breakdown of all orders</p>
+          <div className="flex-grow space-y-4">
+            {loading ? (
+              <div className="space-y-6">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className="space-y-2">
+                    <div className="flex justify-between">
+                      <div className="h-3 w-20 bg-gray-100 rounded skeleton" />
+                      <div className="h-3 w-12 bg-gray-100 rounded skeleton" />
+                    </div>
+                    <div className="h-2 w-full bg-gray-100 rounded-full skeleton" />
+                  </div>
+                ))}
+              </div>
+            ) : Object.entries(ordersByStatus).map(([status, count]) => {
+              const total = counts.orders || 1;
+              const pct = Math.round(((count as number) / total) * 100);
+              const colorMap: Record<string, string> = {
+                'Pending': '#f59e0b', 'Processing': '#3b82f6', 'Shipped': '#8b5cf6',
+                'Delivered': '#22c55e', 'Cancelled': '#ef4444',
+              };
+              const barColor = colorMap[status] || '#9ca3af';
+              return (
+                <div key={status}>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-[12px] font-bold text-[var(--adm-text-primary)]">{status}</span>
+                    <span className="text-[11px] font-black text-[var(--adm-text-secondary)]">{count as number} ({pct}%)</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: barColor }} />
+                  </div>
+                </div>
+              );
+            })}
+            {Object.keys(ordersByStatus).length === 0 && (
+              <p className="text-sm text-[var(--adm-text-secondary)] font-medium text-center py-8">No orders yet</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Low Stock Alerts */}
+        <div className="bg-[var(--adm-card-bg)] rounded-[2rem] p-8 border border-[var(--adm-border)] shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-black text-[var(--adm-text-primary)] flex items-center gap-2">
+              <AlertTriangle size={20} className="text-amber-500" /> Low Stock
+            </h3>
+            <span className="text-[10px] font-black text-amber-600 bg-amber-100/50 px-3 py-1.5 rounded-full border border-amber-200/50">{lowStockProducts.length} items</span>
+          </div>
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="h-14 w-full bg-[var(--adm-bg)] rounded-2xl skeleton opacity-60" />
+              ))}
+            </div>
+          ) : lowStockProducts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 space-y-4 opacity-60">
+              <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center">
+                <span className="text-2xl">🎉</span>
+              </div>
+              <p className="text-sm text-[var(--adm-text-secondary)] font-black uppercase tracking-widest text-center">All products are well stocked!</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {lowStockProducts.map((p) => (
+                <Link 
+                  key={p.id} 
+                  to={`/admin/products/${p.id}/buyers`}
+                  className="flex items-center justify-between p-3 bg-amber-50/50 rounded-xl border border-amber-100 hover:bg-amber-100/50 transition-all cursor-pointer group"
+                >
+                  <span className="text-[12px] font-bold text-[var(--adm-text-primary)] truncate max-w-[160px] group-hover:text-accent transition-colors">{p.title}</span>
+                  <span className={`text-[11px] font-black px-2 py-0.5 rounded-lg ${
+                    (p.stock ?? 0) === 0 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {p.stock ?? 0} left
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Orders */}
+        <div className="lg:col-span-2 bg-[var(--adm-card-bg)] rounded-[2rem] p-8 border border-[var(--adm-border)] shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-black text-[var(--adm-text-primary)]">Recent Orders</h3>
+          </div>
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-14 w-full bg-[var(--adm-bg)] rounded-xl skeleton" />
+              ))}
+            </div>
+          ) : recentOrders.length === 0 ? (
+            <p className="text-sm text-[var(--adm-text-secondary)] font-medium text-center py-8">No orders yet</p>
+          ) : (
+            <div className="overflow-x-auto">
+              {/* Desktop Table View */}
+              <table className="w-full hidden md:table">
+                <thead>
+                  <tr className="text-left border-b border-gray-50">
+                    <th className="pb-3 text-[10px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest">Invoice</th>
+                    <th className="pb-3 text-[10px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest">Customer</th>
+                    <th className="pb-3 text-[10px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest">Status</th>
+                    <th className="pb-3 text-[10px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {recentOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-[var(--adm-bg)]/50 transition-all">
+                      <td className="py-3 text-[12px] font-black text-[var(--adm-text-primary)]">{order.invoiceId}</td>
+                      <td className="py-3 text-[12px] font-bold text-gray-500">{order.customerName}</td>
+                      <td className="py-3">
+                        <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-lg ${
+                          order.status === 'Delivered' ? 'bg-green-50 text-green-600' :
+                          order.status === 'Cancelled' ? 'bg-red-50 text-red-500' :
+                          order.status === 'Shipped' ? 'bg-purple-50 text-purple-600' :
+                          order.status === 'Processing' ? 'bg-blue-50 text-blue-600' :
+                          'bg-amber-50 text-amber-600'
+                        }`}>
+                          {order.status}
+                        </span>
+                      </td>
+                      <td className="py-3 text-right text-[12px] font-black text-[var(--adm-text-primary)]">৳{(order.totalAmount || 0).toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-3">
+                {recentOrders.map((order) => (
+                  <div key={order.id} className="p-4 bg-[var(--adm-bg)] rounded-2xl border border-[var(--adm-border)] space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[12px] font-black text-[var(--adm-text-primary)]">{order.invoiceId}</span>
+                      <span className="text-[12px] font-black text-[var(--adm-text-primary)]">৳{(order.totalAmount || 0).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[11px] font-bold text-gray-500">{order.customerName}</span>
+                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-lg ${
+                        order.status === 'Delivered' ? 'bg-green-50 text-green-600' :
+                        order.status === 'Cancelled' ? 'bg-red-50 text-red-500' :
+                        order.status === 'Shipped' ? 'bg-purple-50 text-purple-600' :
+                        order.status === 'Processing' ? 'bg-blue-50 text-blue-600' :
+                        'bg-amber-50 text-amber-600'
+                      }`}>
+                        {order.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const StatCard: React.FC<{ label: string; value: string; icon: React.ElementType; color: string; subtitle?: string; to?: string; loading?: boolean }> = ({ label, value, icon: Icon, color, subtitle, to, loading }) => {
+  const colorMap: Record<string, string> = {
+    orange: 'bg-[#ff6b6b]/10 text-[#ff6b6b]',
+    coral: 'bg-[#ff9f43]/10 text-[#ff9f43]',
+    red: 'bg-[#ee5253]/10 text-[#ee5253]',
+  };
+
+  const content = (
+    <>
+      <div className="flex items-center justify-between mb-3">
+        <div className={`p-2.5 rounded-xl ${loading ? 'bg-gray-100 skeleton' : colorMap[color] || 'bg-gray-100 text-gray-500'}`}>
+          {loading ? <div className="w-5 h-5" /> : <Icon size={20} />}
+        </div>
+      </div>
+      {loading ? (
+        <div className="space-y-2">
+          <div className="h-6 w-24 bg-gray-100 rounded skeleton" />
+          <div className="h-3 w-16 bg-gray-100 rounded skeleton" />
+        </div>
+      ) : (
+        <>
+          <h4 className="text-lg md:text-xl font-black text-[var(--adm-text-primary)] tracking-tight mb-0.5">{value}</h4>
+          <p className="text-[8px] md:text-[10px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest">{label}</p>
+        </>
+      )}
+      {subtitle && (
+        loading ? (
+          <div className="h-3 w-20 bg-[var(--adm-bg)] rounded mt-2 skeleton" />
+        ) : (
+          <p className="text-[9px] md:text-[10px] font-medium text-[var(--adm-text-secondary)] mt-1 line-clamp-1">{subtitle}</p>
+        )
+      )}
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#ff6b6b]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+    </>
+  );
+
+  const className = "bg-[var(--adm-card-bg)] p-4 md:p-5 rounded-2xl border border-[var(--adm-border)] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all group relative overflow-hidden block cursor-pointer";
+
+  if (to) {
+    return (
+      <Link to={to} className={className}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={className}>
+      {content}
+    </div>
+  );
+};
+
+const ChartLegend: React.FC<{ label: string; color: string }> = ({ label, color }) => (
+  <div className="flex items-center gap-2">
+    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+    <span className="text-[11px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest">{label}</span>
+  </div>
+);

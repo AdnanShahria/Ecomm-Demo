@@ -1,0 +1,139 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1777787674708,
+      "tag": "0000_loose_katie_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1777882270400,
+      "tag": "0001_misty_hannibal_king",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1777890499762,
+      "tag": "0002_white_night_nurse",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1777916379743,
+      "tag": "0003_premium_morlocks",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1777959567071,
+      "tag": "0004_fat_spiral",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1777970844382,
+      "tag": "0005_hard_sumo",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1777973249248,
+      "tag": "0006_nice_annihilus",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1777981265203,
+      "tag": "0007_woozy_thanos",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1778040342238,
+      "tag": "0008_early_karma",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1778040886640,
+      "tag": "0009_spicy_sue_storm",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1778042350586,
+      "tag": "0010_wealthy_sersi",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1778044840573,
+      "tag": "0011_redundant_mandarin",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1778045492249,
+      "tag": "0012_opposite_lizard",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1778049106118,
+      "tag": "0013_busy_secret_warriors",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1778053006724,
+      "tag": "0014_complex_magneto",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1778058590694,
+      "tag": "0015_dapper_wolfsbane",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1778063835136,
+      "tag": "0016_adorable_stone_men",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1778749989111,
+      "tag": "0017_classy_skreet",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1778750490295,
+      "tag": "0018_great_punisher",
+      "breakpoints": true
+    }
+  ]
+}
