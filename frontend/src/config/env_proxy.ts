@@ -7,3 +7,6 @@ export const ENV = {
   
   // Other non-sensitive config can go here
 };
+
+console.log("[ENV] API_BASE_URL:", ENV.API_BASE_URL);
+console.log("[ENV] VITE_API_URL raw:", import.meta.env.VITE_API_URL ?? "(not set)");
