@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getProducts, getCategories } from '../services/api';
 import type { Product, Category } from '../types';
 import { ProductCard } from '../components/home/ProductCard';
@@ -7,6 +7,7 @@ import { ProductCard } from '../components/home/ProductCard';
 
 export const CategoryPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [category, setCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,7 +72,7 @@ export const CategoryPage: React.FC = () => {
         <h2 className="text-4xl font-black text-primary mb-4">Category Not Found</h2>
         <p className="text-muted font-bold mb-8">The category you are looking for does not exist or has been moved.</p>
         <button 
-          onClick={() => window.location.href = '/shop'}
+          onClick={() => navigate('/shop')}
           className="bg-primary text-white px-8 py-4 rounded-xl font-black hover:shadow-xl transition-all"
         >
           Back to Shop

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   ArrowRight, 
   ChevronLeft, 
@@ -16,6 +17,7 @@ import heroFallback from '../../assets/hero.png';
 export const HeroSection: React.FC = () => {
   const { data, loading: homeLoading } = useHomeStore();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const navigate = useNavigate();
 
   const banners = data?.banners?.hero || [];
   const loading = homeLoading && !data;
@@ -106,7 +108,7 @@ export const HeroSection: React.FC = () => {
             <div className="flex items-center gap-2.5 md:gap-6 mt-8">
               <button 
                 className="relative overflow-hidden group bg-primary text-white rounded-lg md:rounded-xl px-3 py-2 md:px-8 md:py-4 text-xs md:text-lg font-bold transition-all duration-500 hover:-translate-y-1 active:scale-95 flex items-center gap-1 md:gap-2 whitespace-nowrap"
-                onClick={() => window.location.href = banner.link || '/category/all'}
+                onClick={() => navigate(banner.link || '/category/all')}
               >
                 <span className="relative z-10">Shop</span>
                 <ArrowRight className="group-hover:translate-x-2 transition-transform duration-500" size={14} />
